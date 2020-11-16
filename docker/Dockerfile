@@ -30,6 +30,7 @@ RUN wget https://github.com/bcgsc/NanoSim/archive/v2.6.0.tar.gz && \
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 
+RUN pip install six==1.15.0
 RUN pip install pysam==0.15.4
 RUN pip install numpy==1.18.5
 RUN pip install scipy==1.4.1
