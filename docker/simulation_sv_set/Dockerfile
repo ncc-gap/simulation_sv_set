@@ -3,7 +3,7 @@ FROM python:3.7.9-buster
 MAINTAINER ken-ichi chiba <kchiba@hgc.jp>
 
 RUN apt-get -y update
-RUN apt-get install -y wget
+RUN apt-get install -y wget pigz
 
 WORKDIR /usr/local
 
