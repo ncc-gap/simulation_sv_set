@@ -54,4 +54,4 @@ with open(input_file, 'r') as hin:
         if match_flag1 == False and match_flag2 == False:       
             print('\t'.join(row.values()))
             svkey2writtern[svkey_line_self] = 1
-            
+
