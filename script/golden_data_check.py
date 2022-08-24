@@ -7,8 +7,7 @@ golden_data_bedpe = sys.argv[2]
 check_margin = 200 # int(sys.argv[3])
 insertion_margin = 0.2 # float(sys.argv[4])
 output = sys.argv[3]
-min_support_read_num = sys.argv[4]
-print(min_support_read_num)
+
 golden_data_db = pysam.TabixFile(golden_data_bedpe)
 
 
@@ -21,97 +20,89 @@ with open(input_file, 'r') as hin:
         insert_seq = F[6]
         insert_size = 0 if insert_seq == "---" else len(insert_seq)
 
-        supporting_read_num_tumor = F[8]
-        
         golden_data_flag = False
         tabix_error_flag = False
-        filter_flag = False 
-        if not supporting_read_num_tumor.startswith("Supporting_Read_Num_Tumor") \
-            and int(supporting_read_num_tumor) < int(min_support_read_num):
-            filter_flag = True
+        try:
+            records = golden_data_db.fetch(F[0], max(0, int(tpos1) - 200), int(tpos1) + 200)
+        except:
+            tabix_error_flag = True
 
-        if not filter_flag:
-            try:
-                records = golden_data_db.fetch(F[0], max(0, int(tpos1) - 200), int(tpos1) + 200)
-            except:
-                tabix_error_flag = True
-    
-            if not tabix_error_flag:
-                for record_line in records:
-                    record = record_line.split('\t')
+        if not tabix_error_flag:
+            for record_line in records:
+                record = record_line.split('\t')
+                
+                # nanomonsv = ins, golden data = dup
+                if tchr1 == record[0] and tchr2 == record[3] and \
+                (tdir1 == "+" and  tdir2 ==  "-"  and record[8] == "-" and record[9] == "+"):
+
+                    if int(tpos1) >= int(record[1]) - check_margin and \
+                    int(tpos1) <= int(record[2]) + check_margin and \
+                    int(tpos2) >= int(record[4]) - check_margin - insert_size + 1 and \
+                    int(tpos2) <= int(record[5]) + check_margin - insert_size + 1 : 
+
+                        golden_data_flag = True
+                        break
                     
-                    # nanomonsv = ins, golden data = dup
-                    if tchr1 == record[0] and tchr2 == record[3] and \
-                    (tdir1 == "+" and  tdir2 ==  "-"  and record[8] == "-" and record[9] == "+"):
-    
+                    if int(tpos1) >= int(record[1]) - check_margin + insert_size  and \
+                    int(tpos1) <= int(record[2]) + check_margin + insert_size and \
+                    int(tpos2) >= int(record[4]) - check_margin and \
+                    int(tpos2) <= int(record[5]) + check_margin : 
+                        golden_data_flag = True
+                        break
+                    
+                # nanomonsv = ins, golden data = ins
+                if tchr1 == record[0] and tchr2 == record[3] and \
+                (tdir1 == record[8] and tdir2 == record[9]) and \
+                record[10] == "INS":
+                
+                    record_insert_size = int(record[11])
+                    ins_diff = record_insert_size - insert_size
+                    ins_diff_per = (abs(ins_diff) / record_insert_size)
+                    if ins_diff_per <= insertion_margin:
+
                         if int(tpos1) >= int(record[1]) - check_margin and \
                         int(tpos1) <= int(record[2]) + check_margin and \
-                        int(tpos2) >= int(record[4]) - check_margin - insert_size + 1 and \
-                        int(tpos2) <= int(record[5]) + check_margin - insert_size + 1 : 
-    
-                            golden_data_flag = True
-                            break
-                        
-                        if int(tpos1) >= int(record[1]) - check_margin + insert_size  and \
-                        int(tpos1) <= int(record[2]) + check_margin + insert_size and \
                         int(tpos2) >= int(record[4]) - check_margin and \
-                        int(tpos2) <= int(record[5]) + check_margin : 
-                            golden_data_flag = True
-                            break
-                        
-                    # nanomonsv = ins, golden data = ins
-                    if tchr1 == record[0] and tchr2 == record[3] and \
-                    (tdir1 == record[8] and tdir2 == record[9]) and \
-                    record[10] == "INS":
-                    
-                        record_insert_size = int(record[11])
-                        ins_diff = record_insert_size - insert_size
-                        ins_diff_per = (abs(ins_diff) / record_insert_size)
-                        if ins_diff_per <= insertion_margin:
-    
-                            if int(tpos1) >= int(record[1]) - check_margin and \
-                            int(tpos1) <= int(record[2]) + check_margin and \
-                            int(tpos2) >= int(record[4]) - check_margin and \
-                            int(tpos2) <= int(record[5]) + check_margin: 
-                                golden_data_flag = True
-                                break
-                        
-                    if tchr1 == record[0] and tchr2 == record[3] and \
-                    (tdir1 == record[8] and tdir2 == record[9]):
-                        
-                        insert_size1 = insert_size
-                        insert_size2 = insert_size
-                        if tdir1 == "+": insert_size1 = insert_size*-1
-                        if tdir1 == "-": insert_size1 = insert_size
-                        if tdir2 == "+": insert_size2 = insert_size*-1
-                        if tdir2 == "-": insert_size2 = insert_size
-    
-                        if int(tpos1) >= int(record[1]) - check_margin and \
-                        int(tpos1) <= int(record[2]) + check_margin and \
-                        int(tpos2) >= int(record[4]) - check_margin + insert_size2 and \
-                        int(tpos2) <= int(record[5]) + check_margin + insert_size2: 
-                            golden_data_flag = True
-                            break
-                            
-                        elif int(tpos1) >= int(record[1]) - check_margin + insert_size1 and \
-                        int(tpos1) <= int(record[2]) + check_margin + insert_size1 and \
-                        int(tpos2) >= int(record[4]) - check_margin  and \
                         int(tpos2) <= int(record[5]) + check_margin: 
                             golden_data_flag = True
                             break
-                            
-    
-            print_line = "\t".join(F)
-            if golden_data_flag:
-                l_record = [record[0],record[2],record[8],record[3],record[5],record[9],record[10],record[11]]
-                print_line = print_line +"\t"+"\t".join(l_record)
-                
-                l_record_key = [record[0],record[1],record[2],record[3],record[4],record[5],record[8],record[9]]
-                l_del.append(",".join(l_record_key))
-            else:
-                l_empty = ["" for _ in range(7)]
-                print_line = print_line +"\t"+"\t".join(l_empty)
-            print(print_line, file=hout)
+                    
+                if tchr1 == record[0] and tchr2 == record[3] and \
+                (tdir1 == record[8] and tdir2 == record[9]):
+                    
+                    insert_size1 = insert_size
+                    insert_size2 = insert_size
+                    if tdir1 == "+": insert_size1 = insert_size*-1
+                    if tdir1 == "-": insert_size1 = insert_size
+                    if tdir2 == "+": insert_size2 = insert_size*-1
+                    if tdir2 == "-": insert_size2 = insert_size
+
+                    if int(tpos1) >= int(record[1]) - check_margin and \
+                    int(tpos1) <= int(record[2]) + check_margin and \
+                    int(tpos2) >= int(record[4]) - check_margin + insert_size2 and \
+                    int(tpos2) <= int(record[5]) + check_margin + insert_size2: 
+                        golden_data_flag = True
+                        break
+                        
+                    elif int(tpos1) >= int(record[1]) - check_margin + insert_size1 and \
+                    int(tpos1) <= int(record[2]) + check_margin + insert_size1 and \
+                    int(tpos2) >= int(record[4]) - check_margin  and \
+                    int(tpos2) <= int(record[5]) + check_margin: 
+                        golden_data_flag = True
+                        break
+                        
+
+        print_line = "\t".join(F)
+        if golden_data_flag:
+            l_record = [record[0],record[2],record[8],record[3],record[5],record[9],record[10],record[11]]
+            print_line = print_line +"\t"+"\t".join(l_record)
+            
+            l_record_key = [record[0],record[1],record[2],record[3],record[4],record[5],record[8],record[9]]
+            l_del.append(",".join(l_record_key))
+        else:
+            l_empty = ["" for _ in range(7)]
+            print_line = print_line +"\t"+"\t".join(l_empty)
+        print(print_line, file=hout)
 hout.close()
 
 output_prefix, ext = os.path.splitext(output)
