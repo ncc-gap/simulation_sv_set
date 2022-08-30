@@ -1,7 +1,8 @@
-
+import sys
+REFERENCE = sys.argv[1]
 
 print_flag = False
-with open('GRCh38.d1.vd1.fa','r') as hin:
+with open(REFERENCE, 'r') as hin:
     for line in hin:
         line = line.rstrip('\n')
         if line.startswith('>chr21'):
