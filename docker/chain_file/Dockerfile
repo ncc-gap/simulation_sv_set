@@ -10,27 +10,27 @@ WORKDIR /usr/local
 RUN mkdir -p ucsc_tools && \
     cd ucsc_tools && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit && \
-    chmod u+x faToTwoBit && \
+    chmod +x faToTwoBit && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/twoBitInfo && \
-    chmod u+x twoBitInfo && \
+    chmod +x twoBitInfo && \
     wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat && \
-    chmod u+x blat && \
+    chmod +x blat && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faSplit && \
-    chmod u+x faSplit && \
+    chmod +x faSplit && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftUp && \
-    chmod u+x liftUp && \
+    chmod +x liftUp && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/axtChain && \
-    chmod u+x axtChain && \
+    chmod +x axtChain && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainMergeSort && \
-    chmod u+x chainMergeSort && \
+    chmod +x chainMergeSort && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainSplit && \
-    chmod u+x chainSplit && \
+    chmod +x chainSplit && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainNet && \
-    chmod u+x chainNet && \
+    chmod +x chainNet && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/netChainSubset && \
-    chmod u+x netChainSubset && \
+    chmod +x netChainSubset && \
     wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver && \
-    chmod u+x liftOver
+    chmod +x liftOver
 
 ENV PATH $PATH:/usr/local/ucsc_tools
 
