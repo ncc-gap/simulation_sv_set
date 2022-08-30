@@ -1,5 +1,43 @@
 #! /usr/bin/env python
 import sys, csv
+import subprocess
+import os
+from ob_utils.svtools.vcftobedpe import run_vcf2bedpe
+
+def nanomonsvSVtoBedpe(input_vcf, output):
+
+    out_pref, ext = os.path.splitext(output)
+    
+    run_vcf2bedpe(input_vcf, out_pref + ".tmp1.bedpe")
+
+    hOUT = open(output, 'w')
+    subprocess.check_call(["bedtools", "sort", "-i", out_pref + ".tmp1.bedpe"], stdout = hOUT)
+    hOUT.close()
+
+    os.remove(out_pref + ".tmp1.bedpe")
+
+def get_svtye(input_vcf):
+    svtpye_dict = {}
+    with open(input_vcf, 'r') as hin:
+        for line in hin:
+            if line.startswith("#"):
+                continue
+            F = line.rstrip('\n').split('\t')
+            sv_type = F[10]
+
+            sv_id_tmp = F[6]
+            sv_id_items = sv_id_tmp.split("_")
+            if len(sv_id_items) < 3:
+                sv_id = sv_id_tmp
+            else:
+                sv_id = sv_id_items[0] + "_" + sv_id_items[1]
+
+            if sv_id in svtpye_dict and svtpye_dict[sv_id] != sv_type:
+                print("[warning] duplicate SV_ID " + sv_id, file=sys.stderr)
+            #print([sv_id, sv_type], file=sys.stderr)
+            svtpye_dict[sv_id] = sv_type
+
+    return svtpye_dict
 
 def basic_filter(row):
     filter_flag = False
@@ -15,6 +53,11 @@ def basic_filter(row):
     return filter_flag
 
 input_file = sys.argv[1]
+input_vcf = sys.argv[2]
+
+input_vcf_pref, _ = os.path.splitext(input_vcf)
+nanomonsvSVtoBedpe(input_vcf, input_vcf_pref + ".bedpe")
+svtpye_dict = get_svtye(input_vcf_pref + ".bedpe")
 
 svkey2read_num = {}
 with open(input_file, 'r') as hin:
@@ -29,7 +72,8 @@ svkey2writtern = {}
 with open(input_file, 'r') as hin:
     for row in csv.DictReader(hin, delimiter = '\t'):
         if header_print == False:
-            print('\t'.join(row))
+            #print('\t'.join(row))
+            print("Chr_1\tPos_1\tDir_1\tChr_2\tPos_2\tDir_2\tInserted_Seq\tChecked_Read_Num_Tumor\tSupporting_Read_Num_Tumor\tChecked_Read_Num_Control\tSupporting_Read_Num_Control\tSv_Type")
             header_print = True
         if basic_filter(row): continue
         inseq_len_self = 0 if row["Inserted_Seq"] == "---" else len(row["Inserted_Seq"])
@@ -51,7 +95,21 @@ with open(input_file, 'r') as hin:
                                 if svkey_line < svkey_line_self:
                                     match_flag1 = True 
         match_flag2 = False
-        if match_flag1 == False and match_flag2 == False:       
-            print('\t'.join(row.values()))
+        if match_flag1 == False and match_flag2 == False:
+            Sv_Type = "---"
+            if "Sv_Type" in row:
+                Sv_Type = row["Sv_Type"]
+            else:
+                if "SV_ID" in row:
+                    if row["SV_ID"] in svtpye_dict:
+                        Sv_Type = svtpye_dict[row["SV_ID"]]
+                    else:
+                        print("[warning] SV_ID is not exists: " + row["SV_ID"], file=sys.stderr)
+
+            #print('\t'.join(row.values()))
+            print('\t'.join([
+                row["Chr_1"], row["Pos_1"], row["Dir_1"], row["Chr_2"], row["Pos_2"], row["Dir_2"], 
+                row["Inserted_Seq"], row["Checked_Read_Num_Tumor"], row["Supporting_Read_Num_Tumor"], 
+                row["Checked_Read_Num_Control"], row["Supporting_Read_Num_Control"], Sv_Type
+            ]))
             svkey2writtern[svkey_line_self] = 1
-            
