@@ -24,16 +24,17 @@ with open(input_file, 'r') as hin:
         tabix_error_flag = False
         try:
             records = golden_data_db.fetch(F[0], max(0, int(tpos1) - 200), int(tpos1) + 200)
-        except:
+        except Exception as e:
+            #print(e)
             tabix_error_flag = True
 
         if not tabix_error_flag:
             for record_line in records:
                 record = record_line.split('\t')
-                
                 # nanomonsv = ins, golden data = dup
                 if tchr1 == record[0] and tchr2 == record[3] and \
-                (tdir1 == "+" and  tdir2 ==  "-"  and record[8] == "-" and record[9] == "+"):
+                ((tdir1 == "+" and  tdir2 ==  "-"  and record[8] == "-" and record[9] == "+") or \
+                (tdir1 == "*" and tdir2 == "*")):
 
                     if int(tpos1) >= int(record[1]) - check_margin and \
                     int(tpos1) <= int(record[2]) + check_margin and \
@@ -52,7 +53,7 @@ with open(input_file, 'r') as hin:
                     
                 # nanomonsv = ins, golden data = ins
                 if tchr1 == record[0] and tchr2 == record[3] and \
-                (tdir1 == record[8] and tdir2 == record[9]) and \
+                ((tdir1 == record[8] and tdir2 == record[9]) or (tdir1 == "*" and tdir2 == "*")) and \
                 record[10] == "INS":
                 
                     record_insert_size = int(record[11])
@@ -90,7 +91,23 @@ with open(input_file, 'r') as hin:
                     int(tpos2) <= int(record[5]) + check_margin: 
                         golden_data_flag = True
                         break
+
+                if tchr1 == record[0] and tchr2 == record[3] and \
+                (tdir1 == "*" and tdir2 == "*"):
+                    
+                    if int(tpos1) >= int(record[1]) - check_margin and \
+                    int(tpos1) <= int(record[2]) + check_margin and \
+                    int(tpos2) >= int(record[4]) - check_margin - insert_size and \
+                    int(tpos2) <= int(record[5]) + check_margin + insert_size: 
+                        golden_data_flag = True
+                        break
                         
+                    elif int(tpos1) >= int(record[1]) - check_margin - insert_size and \
+                    int(tpos1) <= int(record[2]) + check_margin + insert_size and \
+                    int(tpos2) >= int(record[4]) - check_margin  and \
+                    int(tpos2) <= int(record[5]) + check_margin: 
+                        golden_data_flag = True
+                        break
 
         print_line = "\t".join(F)
         if golden_data_flag:

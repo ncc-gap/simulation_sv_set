@@ -29,7 +29,8 @@ def basic_filter(row):
     filter_flag = False
     if row["Chr_1"].endswith("decoy"): filter_flag = True
     if row["Chr_2"].endswith("decoy"): filter_flag = True
-    if row["Supporting_Read_Num_Control"] != "0": filter_flag = True
+    #if row["Supporting_Read_Num_Control"] != "0": filter_flag = True
+    if not row["Supporting_Read_Num_Control"] in ["---", "."] and row["Supporting_Read_Num_Control"] != "0": filter_flag = True
 
     if row["Chr_1"] == row["Chr_2"] and row["Dir_1"] == '+' and row["Dir_2"] == '-':
         sv_size = int(row["Pos_2"]) - int(row["Pos_1"]) + len(row["Inserted_Seq"]) - 1
