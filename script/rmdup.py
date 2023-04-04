@@ -42,7 +42,7 @@ def basic_filter(row):
 def get_checked_read_num_tumor(F):
         checked_read_num_tumor = "" 
         if F["Checked_Read_Num_Tumor"] == "---" or F["Checked_Read_Num_Tumor"] == "." :
-            checked_read_num_tumor = "1" 
+            checked_read_num_tumor = "1"
         else:
             checked_read_num_tumor = F["Checked_Read_Num_Tumor"]
         return checked_read_num_tumor
@@ -64,12 +64,15 @@ with open(input_file, 'r') as hin:
     print('\t'.join(dreader.fieldnames))
     for row in dreader:
 
-        if basic_filter(row): continue
+        if basic_filter(row):
+            continue
+
         tclass = get_sv_class(row) 
 
         inseq_len_self = 0 if row["Inserted_Seq"] == "---" else len(row["Inserted_Seq"])
         svkey_line_self = '\t'.join([row[x] for x in ["Chr_1", "Pos_1", "Dir_1", "Chr_2", "Pos_2", "Dir_2"]])
-        if svkey_line_self in svkey2writtern: continue
+        if svkey_line_self in svkey2writtern:
+            continue
 
         match_flag1 = False
         for svkey_line in svkey2info:
@@ -101,11 +104,9 @@ with open(input_file, 'r') as hin:
             if tclass == "Insertion" and row["Chr_1"] == svkey[0] and row["Chr_2"] == svkey[3]:
                 if svkey2info[svkey_line][2] == "Insertion" and abs(int(row["Pos_1"]) - int(svkey[1])) <= 1000:
                     if 0.8 * svkey2info[svkey_line][1] <= inseq_len_self <= 1.2 * svkey2info[svkey_line][1]:
-                        if int(row["Pos_1"]) > int(svkey[1]): match_flag1 = True
+                        if int(row["Pos_1"]) > int(svkey[1]):
+                            match_flag1 = True
 
         if match_flag1 == False:
             print('\t'.join(row.values()))
             svkey2writtern[svkey_line_self] = 1
-
-
-

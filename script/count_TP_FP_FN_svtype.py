@@ -5,18 +5,22 @@ import os, glob, re
 input_dir = sys.argv[1]
 output = sys.argv[2]
 
-
+sv_types = ['DUP', 'INS', 'DEL', 'INV', 'TRA']
 
 l_infile = glob.glob(input_dir+'/*goldendata.txt')
 with open(output, "w") as hout:
-    print("\tTP\tFP\tFN",file=hout)
+    print("\tSV_Type\tTP\tFP\tFN",file=hout)
     
     for input_file in l_infile:
         input_file_prefix, ext = os.path.splitext(input_file)
 
-        l_true_positive = []
-        l_false_positive = []
-        l_false_negative = []
+        l_true_positive = {}
+        l_false_positive = {}
+        l_false_negative = {}
+        for sv_type in sv_types:
+            l_true_positive[sv_type] = []
+            l_false_positive[sv_type] = []
+            l_false_negative[sv_type] = []
 
         with open(input_file, 'r') as hin:
             for line in hin:
@@ -25,24 +29,42 @@ with open(output, "w") as hout:
                 F = line.split('\t')
                 key = ",".join(F[0]+'\t'+F[1]+'\t'+F[2]+'\t'+F[3]+'\t'+F[4]+'\t'+F[5])
                 if F[12] != "":
-                    l_true_positive.append(key)
+                    sv_type = F[18]
+                    l_true_positive[sv_type].append(key)
                 else:
-                    l_false_positive.append(key)
+                    sv_type = F[11]
+                    if sv_type == "BND":
+                        sv_type = "TRA"
+                    elif sv_type == "CHR":
+                        continue
+                    l_false_positive[sv_type].append(key)
                 
         with open(input_file_prefix + ".false_negative.txt", "r") as hin:
             for line in hin:
                 line = line.rstrip('\n')
                 F = line.split('\t')
                 key = ",".join(F[0]+'\t'+F[2]+'\t'+F[3]+'\t'+F[5]+'\t'+F[8]+'\t'+F[9])
-                l_false_negative.append(key)
+                sv_type = F[10]
+                if sv_type == "BND":
+                    sv_type = "TRA"
+                elif sv_type == "CHR":
+                    continue
+                l_false_negative[sv_type].append(key)
 
         result_name = re.findall(r'_(DP\d+)_(TP\d+)_', input_file)
         if result_name == []: continue
         DP, TP = result_name[0]
-        tp = str(len(set(l_true_positive)))
-        fp = str(len(set(l_false_positive)))
-        fn = str(len(set(l_false_negative)))
-        print(DP+"_"+TP+'\t'+tp+'\t'+fp+'\t'+fn, file=hout)
+
+        for sv_type in sv_types:
+            tp = str(len(set(l_true_positive[sv_type])))
+            fp = str(len(set(l_false_positive[sv_type])))
+            fn = str(len(set(l_false_negative[sv_type])))
+            print(DP+"_"+TP+'\t'+sv_type+'\t'+tp+'\t'+fp+'\t'+fn, file=hout)
+
+        #tp = str(len(set(l_true_positive)))
+        #fp = str(len(set(l_false_positive)))
+        #fn = str(len(set(l_false_negative)))
+        #print(DP+"_"+TP+'\t'+tp+'\t'+fp+'\t'+fn, file=hout)
 
 
 '''

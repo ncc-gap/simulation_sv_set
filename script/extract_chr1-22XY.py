@@ -1,9 +1,8 @@
 import sys
-
-in_file = sys.argv[1]
+REFERENCE = sys.argv[1]
 
 print_flag = False
-with open(in_file,'r') as hin:
+with open(REFERENCE, 'r') as hin:
     for line in hin:
         line = line.rstrip('\n')
         if line.startswith('>chr1'):
