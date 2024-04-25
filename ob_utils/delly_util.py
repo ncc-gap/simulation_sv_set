@@ -160,8 +160,8 @@ def simplify_delly(in_control_bedpe, hout, h_chrom_number):
             
 def dellySVtoBedpe_main(args):
     
-    in_tumor_sv = args.in_delly_tumor_sv
-    in_control_sv = args.in_delly_control_sv
+    in_tumor_sv = args.in_tumor_sv
+    in_control_sv = args.in_control_sv
     margin = args.margin
     f_grc = args.f_grc
     filter_scaffold_option = args.filter_scaffold_option
@@ -224,8 +224,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(prog = "ob_utils")
-    parser.add_argument("--in_delly_tumor_sv", help = "the vcf format file", type = str, required=True)
-    parser.add_argument("--in_delly_control_sv", help = "the vcf format file", type = str, required=True)
+    parser.add_argument("--in_tumor_sv", help = "the vcf format file", type = str, required=True)
+    parser.add_argument("--in_control_sv", help = "the vcf format file", type = str, required=True)
     parser.add_argument("--output", help = "the output bedpe format file", type = str, required=True)
     parser.add_argument("--margin", help = "the margin for Bedpe", type = int, default = 50)
     parser.add_argument("--f_grc", help = 'chromosome of sv file. True=chr1|False=1', action = 'store_true', default = False )        

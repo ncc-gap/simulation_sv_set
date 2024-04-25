@@ -134,7 +134,7 @@ def filt_clustered_rearrangement2(input_file, output_file, min_tumor_support_rea
 
 def camphorSVtoBedpe_main(args):
     
-    in_tumor_sv = args.in_camphor_tumor_sv
+    in_tumor_sv = args.in_tumor_sv
     f_grc = args.f_grc
     filter_scaffold_option = args.filter_scaffold_option
     bcf_filter_option = args.bcf_filter_option
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(prog = "ob_utils")
-    parser.add_argument("--in_camphor_tumor_sv", help = "the vcf format file", type = str, required=True)
+    parser.add_argument("--in_tumor_sv", help = "the vcf format file", type = str, required=True)
     parser.add_argument("--output", help = "the output bedpe format file", type = str, required=True)
     parser.add_argument("--f_grc", help = 'chromosome of sv file. True=chr1|False=1', action = 'store_true', default = False )        
     parser.add_argument("--bcf_filter_option", help = "filter options for bcftools view", type = str, default = "PASS")

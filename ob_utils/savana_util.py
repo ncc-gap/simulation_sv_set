@@ -14,22 +14,44 @@ def savanaSVtoBedpe(input_vcf, output, f_grc, filter_scaffold_option, bcf_filter
         subprocess.check_call(["bcftools", "view", "-o", out_pref + ".tmp1.vcf", "-f", bcf_filter_option, input_vcf])
     else:
         subprocess.check_call(["bcftools", "view", "-o", out_pref + ".tmp1.vcf", input_vcf])
-        
-    run_vcf2bedpe(out_pref + ".tmp1.vcf", out_pref + ".tmp1.bedpe", end_tag = "END_STARTS_MEDIAN")
+    
+    # add END tag
+    with open(out_pref + ".tmp1.vcf") as hin, open(out_pref + ".tmp2.vcf", "w") as hout:
+        for row in hin:
+            if row.startswith("#"):
+                hout.write(row)
+                if row.startswith("##INFO=<ID=END_EVENT_SIZE_MEAN"):
+                    hout.write('##INFO=<ID=END,Number=1,Type=Float,Description="End">\n')
+                continue
+            F = row.split("\t")
+            pos = F[1]
+            alt = F[4]
+            info = F[7]
+            end = ""
+            if "SVTYPE=BND" in info:
+                end = alt.split(":")[1].split("[")[0].split("]")[0]
+            elif "SVTYPE=INS" in info:
+                end = pos
+            else:
+                raise Exception("Undefine %s" % (info.split(";")[0]))
+            F[7] += ";END=" + end
+            hout.write("\t".join(F))
+
+    run_vcf2bedpe(out_pref + ".tmp2.vcf", out_pref + ".tmp2.bedpe")
     
     if filter_scaffold_option:
-        filter_scaffold(out_pref + ".tmp1.bedpe", out_pref + ".tmp2.bedpe", f_grc)
+        filter_scaffold(out_pref + ".tmp2.bedpe", out_pref + ".tmp3.bedpe", f_grc)
     else:
-        shutil.copyfile(out_pref + '.tmp1.bedpe', out_pref + '.tmp2.bedpe')
+        shutil.copyfile(out_pref + '.tmp2.bedpe', out_pref + '.tmp3.bedpe')
 
     hOUT = open(output, 'w')
-    subprocess.check_call(["bedtools", "sort", "-i", out_pref + ".tmp2.bedpe"], stdout = hOUT)
+    subprocess.check_call(["bedtools", "sort", "-i", out_pref + ".tmp3.bedpe"], stdout = hOUT)
     hOUT.close()
 
     os.remove(out_pref + ".tmp1.vcf")
-    os.remove(out_pref + ".tmp1.bedpe")
+    os.remove(out_pref + ".tmp2.vcf")
     os.remove(out_pref + ".tmp2.bedpe")
-
+    os.remove(out_pref + ".tmp3.bedpe")
 
 def repair_dup_strand(bedpe_file, output):
     
@@ -78,6 +100,7 @@ def repair_dup_strand(bedpe_file, output):
             #        F[9] = '+'
             #    else:
             #        F[9] = '-'
+            
             print('\t'.join(F), file=hOUT)
 
     hOUT.close()  
@@ -112,7 +135,7 @@ def filt_clustered_rearrangement2(input_file, output_file, min_tumor_support_rea
 
 def savanaSVtoBedpe_main(args):
     
-    in_tumor_sv = args.in_savana_tumor_sv
+    in_tumor_sv = args.in_tumor_sv
     f_grc = args.f_grc
     filter_scaffold_option = args.filter_scaffold_option
     bcf_filter_option = args.bcf_filter_option
@@ -155,7 +178,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(prog = "ob_utils")
-    parser.add_argument("--in_savana_tumor_sv", help = "the vcf format file", type = str, required=True)
+    parser.add_argument("--in_tumor_sv", help = "the vcf format file", type = str, required=True)
     parser.add_argument("--output", help = "the output bedpe format file", type = str, required=True)
     parser.add_argument("--f_grc", help = 'chromosome of sv file. True=chr1|False=1', action = 'store_true', default = False )        
     parser.add_argument("--bcf_filter_option", help = "filter options for bcftools view", type = str, default = "PASS")
