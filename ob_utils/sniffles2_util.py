@@ -176,7 +176,7 @@ def snifflesSVtoBedpe_main(args):
     min_sv_length = args.min_sv_length
     output = args.output
     debug = args.debug
-    sniffles2 = args.sniffles2
+    sniffles2 = True
 
     output_prefix, ext = os.path.splitext(output)
     
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_control_support_read", help = "maximum control support reads", type = int, default = 1)
     parser.add_argument("--min_sv_length", help = "minimum sv length", type = int, default = 1)
     parser.add_argument("--debug", default = False, action = 'store_true', help = "keep intermediate files")
-    parser.add_argument("--sniffles2", default = False, action = 'store_true', help = "used sniffles2")
+    #parser.add_argument("--sniffles2", default = False, action = 'store_true', help = "used sniffles2")
     args = parser.parse_args()
 
     snifflesSVtoBedpe_main(args)
