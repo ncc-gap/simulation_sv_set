@@ -237,4 +237,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", default = False, action = 'store_true', help = "keep intermediate files")
     args = parser.parse_args()
 
-    dellySVtoBedpe_main(args)(args)
+    dellySVtoBedpe_main(args)
