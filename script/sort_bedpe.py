@@ -36,6 +36,8 @@ with open(input_file, 'r') as hin:
         tchr1, tpos1, tdir1, tchr2, tpos2, tdir2 = F[0], F[1], F[2], F[3], F[4], F[5]
         if tchr1.startswith("chrUn"): continue
         if tchr2.startswith("chrUn"): continue
+        if tchr1.startswith("chrM"): continue
+        if tchr2.startswith("chrM"): continue
         if tchr1.endswith("random"): continue
         if tchr2.endswith("random"): continue
 
