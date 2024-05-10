@@ -73,7 +73,7 @@ with open(input_file, 'r') as hin:
     for row in csv.DictReader(hin, delimiter = '\t'):
         if header_print == False:
             #print('\t'.join(row))
-            print("Chr_1\tPos_1\tDir_1\tChr_2\tPos_2\tDir_2\tInserted_Seq\tChecked_Read_Num_Tumor\tSupporting_Read_Num_Tumor\tChecked_Read_Num_Control\tSupporting_Read_Num_Control\tSv_Type")
+            print("Chr_1\tPos_1\tDir_1\tChr_2\tPos_2\tDir_2\tInserted_Seq\tChecked_Read_Num_Tumor\tSupporting_Read_Num_Tumor\tChecked_Read_Num_Control\tSupporting_Read_Num_Control\tSV_Type")
             header_print = True
         if basic_filter(row): continue
         inseq_len_self = 0 if row["Inserted_Seq"] == "---" else len(row["Inserted_Seq"])
