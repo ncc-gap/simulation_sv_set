@@ -19,7 +19,8 @@ def sort_breakpoint_main(chr1,pos1,chr2,pos2,h_chrom_number):
     
     if chr1 == chr2 and int(pos1) > int(pos2):
         return False
-    elif int(h_chrom_number[chr1]) > int(h_chrom_number[chr2]):
+    #elif h_chrom_number[chr1] > h_chrom_number[chr2]:
+    elif chr1 > chr2:
         return False
     else:
         return True
