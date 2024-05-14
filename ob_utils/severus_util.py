@@ -58,12 +58,12 @@ def repair_dup_strand(bedpe_file, output):
             #    F[8] = '+'
             #    F[9] = '-'
             elif sv_type == "BND":
-                if alt.startswith('N'):
+                if alt.startswith('N[') or alt.startswith('['):
                     F[8] = '-'
                 else:
                     F[8] = '+'
                 alt_seq = re.findall(r'([][])(.+?)([][])', alt)
-                if alt_seq[0][0].startswith(']'):
+                if alt[::-1].startswith('N'):
                     F[9] = '-'
                 else:
                     F[9] = '+'
@@ -86,6 +86,7 @@ def filt_clustered_rearrangement2(input_file, output_file, min_tumor_support_rea
             info1, info2 = F[18], F[19]
             format_keys, format_vals = F[20], F[21]
             
+            #if info1.split(";")[0] == "IMPRECISE": continue
             tumor_support_read = utils.get_format_val(format_keys, format_vals, "DV")
             tumor_ref_read = utils.get_format_val(format_keys, format_vals, "DR")
             insert_seq = alt if sv_type == "INS" else "---"
